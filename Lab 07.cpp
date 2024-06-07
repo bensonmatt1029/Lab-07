@@ -125,13 +125,32 @@ int main()
 
    cout << (linearInterpolation(0.2897, 1.900, 0.2297, 2.870, 2.4323));
 
+   double distance = 0;
+   double dx, dy;
+
    for (int i = 0; i < 20; i++)
    {
+      double angle = convertToRadians(75);
+      
+      dx = sin(angle) * VELOCITYM;
+      dy = cos(angle) * VELOCITYM;
 
+
+      distance = computeDistance(0.0, dx, 0.0, 1.0);
    }
+
+   cout << distance << endl;
 
 
 }
 
 
 // Ask about inertia
+
+// distance formula is inertia
+
+// gravity - use linear interpolation and a return a value from a table
+// drag - same but new table. drag force equatoin
+
+
+// include position.h, velocity.h, and angle.h
