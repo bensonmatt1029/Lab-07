@@ -8,6 +8,7 @@
 #define _USE_MATH_DEFINES
 #include <math.h>   // for M_PI which is 3.14159
 
+//#include "position.h"
 #include <utility>
 #include <vector>
 #include <cmath>    // for sin, cos
@@ -18,6 +19,49 @@ using namespace std;
 #define DIAMETER  154.89 // diameter of projectile
 #define VELOCITYM 827.0  // muzzle velocity
 #define TIME      0.01   // time interval
+#define GRAVITY   -9.8   // gravity
+#define ACC       43.867 // acceleration
+
+
+/****************************************************
+* Table values
+****************************************************/
+// Altitude values
+std::vector<int> altitudes =
+{
+ 0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000,
+ 10000, 15000, 20000, 25000, 30000, 40000, 50000, 60000, 70000, 80000
+};
+
+// Speed of Sound Values
+std::vector<int> speedOfSound =
+{
+ 340, 336, 332, 328, 324, 320, 316, 312, 308, 303,
+ 299, 295, 295, 295, 305, 324, 337, 319, 289, 269
+};
+
+// Density Values
+std::vector<double> densities =
+{
+ 1.2250000, 1.1120000, 1.0070000, 0.9093000, 0.8194000, 0.7364000,
+ 0.6601000, 0.5900000, 0.5258000, 0.4671000, 0.4135000, 0.1948000,
+ 0.0889100, 0.0400800, 0.0184100, 0.0039960, 0.0010270, 0.0003097,
+ 0.0000828, 0.0000185
+};
+
+// Mach values
+std::vector<double> machNumbers =
+{
+ 0.300, 0.500, 0.700, 0.890, 0.920, 0.960, 0.980, 1.000, 1.020, 1.060,
+ 1.240, 1.530, 1.990, 2.870, 2.890, 5.000
+};
+
+// Drag Coefficients
+std::vector<double> dragCoefficients =
+{
+ 0.1629, 0.1659, 0.2031, 0.2597, 0.3010, 0.3287, 0.4002, 0.4258, 0.4335, 0.4483,
+ 0.4064, 0.3663, 0.2897, 0.2297, 0.2306, 0.2656
+};
 
 /****************************************************
 * Linear Interpolation
@@ -61,17 +105,39 @@ double computeDistance(double initialS, double v, double a, double t)
    return s;
 }
 
+/****************************************************
+* ComputeDX
+****************************************************/
+double computeDX(double angle, double initialV)
+{
+   return sin(angle) * initialV;
+}
 
 /****************************************************
-* Inertia
-* Take Acceleration, Drag, and Gravity as 
-* inputs and return horizontal and vertical velocity.
+* ComputeDY
 ****************************************************/
-//double inertia(double acceleration, double drag, double gravity, double angle)
-//{
-//   double dx, dy;
-//   return dx, dy;
-//}
+double computeDY(double angle, double initialV)
+{
+   return cos(angle) * initialV;
+}
+
+
+/****************************************************
+* ComputeDDX
+****************************************************/
+double computeDDX(double angle)
+{
+   return (-sin(angle) * ACC);
+}
+
+/****************************************************
+* ComputeDDY
+****************************************************/
+double computeDDY(double angle)
+{
+   return (GRAVITY - cos(angle) * ACC);
+}
+
 
 int main()
 {
@@ -81,65 +147,31 @@ int main()
    double radius = DIAMETER / 2;
    double surfaceA = M_PI * (radius * radius);
 
-   // Altitude values
-   std::vector<int> altitudes = 
-   {
-    0, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000,
-    10000, 15000, 20000, 25000, 30000, 40000, 50000, 60000, 70000, 80000
-   };
-
-   // Speed of Sound Values
-   std::vector<int> speedOfSound = 
-   {
-    340, 336, 332, 328, 324, 320, 316, 312, 308, 303,
-    299, 295, 295, 295, 305, 324, 337, 319, 289, 269
-   };
-
-   // Density Values
-   std::vector<double> densities = 
-   {
-    1.2250000, 1.1120000, 1.0070000, 0.9093000, 0.8194000, 0.7364000,
-    0.6601000, 0.5900000, 0.5258000, 0.4671000, 0.4135000, 0.1948000,
-    0.0889100, 0.0400800, 0.0184100, 0.0039960, 0.0010270, 0.0003097,
-    0.0000828, 0.0000185
-   };
-
-   // Mach values
-   std::vector<double> machNumbers = 
-   {
-    0.300, 0.500, 0.700, 0.890, 0.920, 0.960, 0.980, 1.000, 1.020, 1.060,
-    1.240, 1.530, 1.990, 2.870, 2.890, 5.000
-   };
-
-   // Drag Coefficients
-   std::vector<double> dragCoefficients = 
-   {
-    0.1629, 0.1659, 0.2031, 0.2597, 0.3010, 0.3287, 0.4002, 0.4258, 0.4335, 0.4483,
-    0.4064, 0.3663, 0.2897, 0.2297, 0.2306, 0.2656
-   };
-
-
-
    //cout << "What is the angle of the howitzer where 0 is up?";
    //cin >> angle;
 
    cout << (linearInterpolation(0.2897, 1.900, 0.2297, 2.870, 2.4323));
 
    double distance = 0;
+   double altitude = 0;
    double dx, dy;
 
    for (int i = 0; i < 20; i++)
    {
       double angle = convertToRadians(75);
       
-      dx = sin(angle) * VELOCITYM;
-      dy = cos(angle) * VELOCITYM;
+      dx = computeDX(angle, VELOCITYM);
+      dy = computeDY(angle, VELOCITYM);
 
+      double ddx = computeDDX(angle);
+      double ddy = computeDDY(angle);
 
-      distance = computeDistance(0.0, dx, 0.0, 1.0);
+      distance = computeDistance(0.0, dx, ddx, 20.0);
+      altitude = computeDistance(0.0, dy, ddy, 20.0);
    }
 
    cout << distance << endl;
+   cout << altitude << endl;
 
 
 }
