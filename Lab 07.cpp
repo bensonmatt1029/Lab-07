@@ -10,7 +10,7 @@
 
 
 #include "velocity.h"
-//#include "acceleration"
+#include "acceleration.h"
 #include "position.h"
 #include <utility>
 #include <vector>
@@ -22,7 +22,6 @@ using namespace std;
 #define DIAMETER  154.89 // diameter of projectile
 #define VELOCITYM 827.0  // muzzle velocity
 #define TIME      0.01   // time interval
-#define GRAVITY   -9.8   // gravity
 #define ACC       43.867 // acceleration
 
 
@@ -62,21 +61,28 @@ std::vector<double> machNumbers =
 // Drag Coefficients
 std::vector<double> dragCoefficients =
 {
- 0.1629, 0.1659, 0.2031, 0.2597, 0.3010, 0.3287, 0.4002, 0.4258, 0.4335, 0.4483,
- 0.4064, 0.3663, 0.2897, 0.2297, 0.2306, 0.2656
+ 0.1629, 0.1659, 0.2031, 0.2597, 0.3010, 0.3287, 0.4002, 0.4258, 0.4335,
+ 0.4483, 0.4064, 0.3663, 0.2897, 0.2297, 0.2306, 0.2656
 };
+
+// Gravity values
+std::vector<double> gravities = 
+{
+ 9.807, 9.804, 9.801, 9.797, 9.794, 9.791,
+ 9.788, 9.785, 9.782, 9.779, 9.776, 9.761, 9.745, 9.730
+};
+
 
 /****************************************************
 * Linear Interpolation
 * Find a point between two points 
-* d0,r0 = coordinates of one point
-* d1,r1 = coordinates of second point
-* d,r   = coordinates of a point in the middle
+* x0,y0 = coordinates of one point
+* x1,y1 = coordinates of second point
+* x,y   = coordinates of a point in the middle
 ****************************************************/
-double linearInterpolation(double d0, double r0, double d1, double r1, /*double d,*/ double r)
+double linearInterpolation(double x0, double y0, double x1, double y1, double x) 
 {
-    
-   return d0 + (((r - r0) * (d1 - d0)) / (r1 - r0));
+   return y0 + (y1 - y0) * ((x - x0) / (x1 - x0));
 }
 
 /****************************************************
@@ -108,48 +114,73 @@ double computeDistance(double initialS, double v, double a, double t)
    return s;
 }
 
-/****************************************************
-* ComputeDX
-****************************************************/
-double computeDX(double angle, double initialV)
+///******************************************************
+//* setGravity
+//* uses interpolation and values from the table
+//******************************************************/
+//int getIAltitudes(double altitude, int iAltitudes)
+//{
+//   
+//   
+//   //cout << "ALEVEL: " << aLevel << endl;
+//   if (altitude > altitudes[iAltitudes+1] )
+//   {
+//      iAltitudes++;
+//      
+//   }
+//   else if (altitude < altitudes[iAltitudes])
+//   {
+//      iAltitudes--;
+//     
+//   }
+//   return iAltitudes;
+//}
+
+/******************************************************
+* Get index of altitude in the altitude table
+* Returns the index of the closest altitude to the given altitude
+******************************************************/
+int getAltitudeIndex(double altitude)
 {
-   return sin(angle) * initialV;
+   int index = 0;
+   while (index < altitudes.size() - 1 && altitude > altitudes[index + 1]) {
+      index++;
+   }
+   return index;
 }
 
-/****************************************************
-* ComputeDY
-****************************************************/
-double computeDY(double angle, double initialV)
+/******************************************************
+* Compute gravity at a given altitude
+* Uses linear interpolation to find gravity at the given altitude
+******************************************************/
+double computeGravity(double altitude)
 {
-   return cos(angle) * initialV;
+   int index = getAltitudeIndex(altitude);
+   if (index == altitudes.size() - 1) {
+      return gravities[index];
+   }
+   else {
+      double gravity = linearInterpolation(altitudes[index], gravities[index], altitudes[index + 1], gravities[index + 1], altitude);
+      return gravity;
+   }
 }
 
-
-/****************************************************
-* ComputeDDX
-****************************************************/
-double computeDDX(double angle)
+void setGravity(double altitude, int iAltitude)
 {
-   return (-sin(angle) * ACC);
-}
 
-/****************************************************
-* ComputeDDY
-****************************************************/
-double computeDDY(double angle)
-{
-   return (GRAVITY - cos(angle) * ACC);
 }
-
 
 int main()
 {
+   Acceleration a;
 
-   Velocity velocity(798.821, 214.043);
-   pair<double, double> position(0, 0);
+   double angle = convertToRadians(75);
+   Velocity velocity(sin(angle) * VELOCITYM, cos(angle) * VELOCITYM);
+
+   Position position;
    double degrees = 75;
    double radians = convertToRadians(75);
-   double radius = DIAMETER / 2;
+   double radius = DIAMETER / 2.0;
    double surfaceA = M_PI * (radius * radius);
 
    //cout << "What is the angle of the howitzer where 0 is up?";
@@ -157,39 +188,41 @@ int main()
 
    //cout << (linearInterpolation(0.2897, 1.900, 0.2297, 2.870, 2.4323));
 
-   double distance = 0;
-   double altitude = 0;
-   //double dx, dy;
-   double angle = convertToRadians(75);
+   double distance = 0.0;
+   double altitude = 0.0;
+   double hangTime = 0.0;
 
-   for (int i = 0; i < 20; i++)
+
+   double gravity = -9.807;
+   
+   // leves on the grav table
+   int iAltitudes = 0;
+   int iGravities = 0;
+
+   //for (int i = 0; i < 20; i++)
+   while (altitude >= 0.0)
    {
+
+      //iAltitudes = getIAltitudes(altitude, iAltitudes);
+      //iGravities = iAltitudes;
       
+
+      gravity = computeGravity(altitude);
+      cout << "GRAV: " << gravity << endl;
       
-      // STEP 1 INERTIA
-      double testDX, testDY;
 
-      distance += (computeDX(angle, VELOCITYM));
-      altitude += (computeDY(angle, VELOCITYM / velocity.getDY()));
+      velocity.addDY(-gravity * TIME);
 
-      velocity.addDY(GRAVITY * 1);
+      distance += computeDistance(0.0, velocity.getDX(), 0.0, TIME);
+      altitude += computeDistance(0.0, velocity.getDY(), -gravity, TIME);
 
-      cout << velocity.getDY() << endl;
+      cout << "Distance: " << distance << " meters\n";
+      cout << "Altitude: " << altitude << " meters\n";
+      cout << "Velocity DY: " << velocity.getDY() << " m/s\n\n";
+      cout << "Hang Time: " << hangTime << "s\n\n";
 
-
-      cout << "Distance: " << distance << endl;
-      cout << "Altitude: " << altitude << endl;
-
-
-
-      //dx = computeDX(angle, VELOCITYM);
-      //dy = computeDY(angle, VELOCITYM);
-
-      //double ddx = computeDDX(angle);
-      //double ddy = computeDDY(angle);
-
-      //distance = computeDistance(0.0, dx, ddx, 20.0);
-      //altitude = computeDistance(0.0, dy, ddy, 20.0);
+      hangTime += 0.01;
+      
    }
 
 
