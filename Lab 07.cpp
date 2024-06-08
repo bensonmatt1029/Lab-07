@@ -161,26 +161,31 @@ int main()
    {
       
       
+      // STEP 1 INERTIA
+      double testDX, testDY;
 
-      dx = computeDX(angle, VELOCITYM);
-      dy = computeDY(angle, VELOCITYM);
+      distance += (computeDX(angle, VELOCITYM));
+      altitude += (computeDY(angle, VELOCITYM));
 
-      double ddx = computeDDX(angle);
-      double ddy = computeDDY(angle);
 
-      distance = computeDistance(0.0, dx, ddx, 20.0);
-      altitude = computeDistance(0.0, dy, ddy, 20.0);
+
+
+      cout << "Distance: " << distance << endl;
+      cout << "Altitude: " << altitude << endl;
+
+
+
+      //dx = computeDX(angle, VELOCITYM);
+      //dy = computeDY(angle, VELOCITYM);
+
+      //double ddx = computeDDX(angle);
+      //double ddy = computeDDY(angle);
+
+      //distance = computeDistance(0.0, dx, ddx, 20.0);
+      //altitude = computeDistance(0.0, dy, ddy, 20.0);
    }
 
-   // STEP 1 INERTIA
-   double testDX, testDY;
-   
-   cout << "DX: " << computeDX(angle, VELOCITYM) * 20 << endl;
-   cout << "DY: " << computeDY(angle, VELOCITYM) * 20 << endl;
 
-
-   cout << "Distance: " << distance << endl;
-   cout << "Altitude: " << altitude << endl;
 
 
 }
