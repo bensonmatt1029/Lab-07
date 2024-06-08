@@ -127,10 +127,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\week5\lab05\acceleration.cpp" />
+    <ClCompile Include="..\..\week5\lab05\velocity.cpp" />
     <ClCompile Include="Lab 07.cpp" />
     <ClCompile Include="position.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\week5\lab05\acceleration.h" />
+    <ClInclude Include="..\..\week5\lab05\velocity.h" />
     <ClInclude Include="position.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

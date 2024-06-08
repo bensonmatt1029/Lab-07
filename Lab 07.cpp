@@ -8,7 +8,10 @@
 #define _USE_MATH_DEFINES
 #include <math.h>   // for M_PI which is 3.14159
 
-//#include "position.h"
+
+#include "velocity.h"
+//#include "acceleration"
+#include "position.h"
 #include <utility>
 #include <vector>
 #include <cmath>    // for sin, cos
@@ -141,6 +144,8 @@ double computeDDY(double angle)
 
 int main()
 {
+
+   Velocity velocity(798.821, 214.043);
    pair<double, double> position(0, 0);
    double degrees = 75;
    double radians = convertToRadians(75);
@@ -154,7 +159,7 @@ int main()
 
    double distance = 0;
    double altitude = 0;
-   double dx, dy;
+   //double dx, dy;
    double angle = convertToRadians(75);
 
    for (int i = 0; i < 20; i++)
@@ -165,9 +170,11 @@ int main()
       double testDX, testDY;
 
       distance += (computeDX(angle, VELOCITYM));
-      altitude += (computeDY(angle, VELOCITYM));
+      altitude += (computeDY(angle, VELOCITYM / velocity.getDY()));
 
+      velocity.addDY(GRAVITY * 1);
 
+      cout << velocity.getDY() << endl;
 
 
       cout << "Distance: " << distance << endl;
