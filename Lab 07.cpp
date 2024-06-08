@@ -150,16 +150,18 @@ int main()
    //cout << "What is the angle of the howitzer where 0 is up?";
    //cin >> angle;
 
-   cout << (linearInterpolation(0.2897, 1.900, 0.2297, 2.870, 2.4323));
+   //cout << (linearInterpolation(0.2897, 1.900, 0.2297, 2.870, 2.4323));
 
    double distance = 0;
    double altitude = 0;
    double dx, dy;
+   double angle = convertToRadians(75);
 
    for (int i = 0; i < 20; i++)
    {
-      double angle = convertToRadians(75);
       
+      
+
       dx = computeDX(angle, VELOCITYM);
       dy = computeDY(angle, VELOCITYM);
 
@@ -170,8 +172,15 @@ int main()
       altitude = computeDistance(0.0, dy, ddy, 20.0);
    }
 
-   cout << distance << endl;
-   cout << altitude << endl;
+   // STEP 1 INERTIA
+   double testDX, testDY;
+   
+   cout << "DX: " << computeDX(angle, VELOCITYM) * 20 << endl;
+   cout << "DY: " << computeDY(angle, VELOCITYM) * 20 << endl;
+
+
+   cout << "Distance: " << distance << endl;
+   cout << "Altitude: " << altitude << endl;
 
 
 }
